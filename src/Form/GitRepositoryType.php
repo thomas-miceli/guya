@@ -24,10 +24,6 @@ class GitRepositoryType extends AbstractType
                     'class' => 'form-control'
                 ]
             ])
-            ->add('private', CheckboxType::class, [
-                'label' => 'Privé',
-                'required' => false
-            ])
         ;
     }
 
