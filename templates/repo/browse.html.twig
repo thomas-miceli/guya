@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Repo : {{ user }}/{{ repo }}{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h2><a href="{{ path('repos_user', {user: user}) }}">{{ user }}</a>/<a href="{{ path('repo_browse', {user: user, repo: repo}) }}">{{ repo }}</a></h2>
+        {% if nbCommits != 0 %}
+            <p>Commits : {{ nbCommits }}</p>
+            <ul>
+                {% for file in files %}
+                    <li><a href="{{ path('repo_get_file', {user: user, repo: repo, commit: commit, file: file}) }}">{{ file }}</a></li>
+                {% endfor %}
+            </ul>
+
+            <a href="{{ path('repo_browse_commits', {user: user, repo: repo}) }}" class="btn btn-info">Voir les commits</a>
+        {% else %}
+            <p>Repo vide</p>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commits : {{ user }}/{{ repo }}{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h2><a href="{{ path('repos_user', {user: user}) }}">{{ user }}</a>/<a href="{{ path('repo_browse', {user: user, repo: repo}) }}">{{ repo }}</a></h2>
+
+        <ul>{%  dump(log)  %}
+            {% for commit in log %}
+                <li>
+                    <a href="{{ path('repo_browse_commit', {user: user, repo: repo, commit: commit.hash }) }}">{{ commit.hash }}</a>
+                    <p>{{ commit.author }}</p>
+                    <p>{{ commit.date }}</p>
+                    <code>{{ commit.message }}</code>
+
+                </li>
+                <hr>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

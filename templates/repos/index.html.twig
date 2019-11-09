@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Kaguya{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h2>Tous les repos</h2>
+
+        <a href="{{ path('repo_create') }}" class="btn btn-info">Nouveau repo</a>
+        <hr>
+        <ul>
+            {% for repo in repos %}
+                <li><a href="{{ path('repos_user', {user: repo.user.username}) }}">{{ repo.user.username }}</a>/<a href="{{ path('repo_browse', {user: repo.user.username, repo: repo.name}) }}">{{ repo.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

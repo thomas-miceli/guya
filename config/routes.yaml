@@ -1,3 +1,7 @@
-#index:
-#    path: /
-#    controller: App\Controller\DefaultController::index
+Security:
+  resource: App\Controller\SecurityController
+  type: annotation
+
+Repos:
+  resource: App\Controller\RepositoriesController
+  type: annotation

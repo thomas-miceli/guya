@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau repo{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h2>Nouveau repo</h2>
+
+        {{ form_start(form) }}
+        <div class="row">
+            <div class="col-8">
+                {{ form_row(form.name) }}
+            </div>
+            <div class="col-2">
+                {{ form_row(form.private) }}
+            </div>
+            <div class="col-2">
+                <input class="btn btn-info btn-block" type="submit" value="Créer" />
+            </div>
+        </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
