@@ -32,9 +32,6 @@ class GitSf {
         return $process->getOutput();
     }
 
-    public function createUser() {
-    }
-
     public function init() {
         $this->sfProcess('mkdir ' . $this->pathFolder, self::GIT_FOLDERS);
         $this->sfProcess('git --bare init');

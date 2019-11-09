@@ -70,10 +70,10 @@ class RepositoryController extends AbstractController
     {
         $git = $this->checkRepo($request->get('user'), $request->get('repo'));
 
-        $nbCommits = 0;
+        $nbCommits = $git->getNbCommits();
         $files = [];
 
-        if ($nbCommits = $git->getNbCommits() != 0) {
+        if ($nbCommits != 0) {
             $files = $git->getFiles();
         }
         return $this->render('repo/browse.html.twig', [
