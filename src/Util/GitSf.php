@@ -13,7 +13,7 @@ class GitSf {
 
     public function __construct(String $folderName)
     {
-        $this->folder = self::GIT_FOLDERS . $folderName;
+        $this->folder = self::GIT_FOLDERS . $folderName . '.git';
     }
 
     private function sfProcess(string $cmd, string $wd = '') {
