@@ -6,7 +6,10 @@
     <div class="container">
         <h2><a href="{{ path('repos_user', {user: user}) }}">{{ user }}</a>/<a href="{{ path('repo_browse', {user: user, repo: repo}) }}">{{ repo }}</a></h2>
 
-        <ul>{%  dump(log)  %}
+        {% if log == null%}
+        <p>Aucun commit</p>
+        {% else %}
+        <ul>
             {% for commit in log %}
                 <li>
                     <a href="{{ path('repo_browse_commit', {user: user, repo: repo, commit: commit.hash }) }}">{{ commit.hash }}</a>
@@ -18,5 +21,6 @@
                 <hr>
             {% endfor %}
         </ul>
+        {% endif %}
     </div>
 {% endblock %}

@@ -7,19 +7,19 @@ use Symfony\Component\Process\Process;
 
 class GitSf {
 
-    private const GIT_FOLDERS = '/home/thomas/gitlist/';
+    public const GIT_FOLDERS = '/home/thomas/gitlist/';
 
-    private $folder;
+    private $pathFolder;
 
-    public function __construct(String $folderName)
+    public function __construct(string $user, string $folderName)
     {
-        $this->folder = self::GIT_FOLDERS . $folderName . '.git';
+        $this->pathFolder = self::GIT_FOLDERS . $user . '/' . $folderName . '.git';
     }
 
     private function sfProcess(string $cmd, string $wd = '') {
         $process = new Process(explode(' ', $cmd));
         if (empty($wd)) {
-            $process->setWorkingDirectory($this->folder);
+            $process->setWorkingDirectory($this->pathFolder);
         } else {
             $process->setWorkingDirectory($wd);
         }
@@ -32,8 +32,11 @@ class GitSf {
         return $process->getOutput();
     }
 
+    public function createUser() {
+    }
+
     public function init() {
-        $this->sfProcess('mkdir ' . $this->folder, self::GIT_FOLDERS);
+        $this->sfProcess('mkdir ' . $this->pathFolder, self::GIT_FOLDERS);
         $this->sfProcess('git --bare init');
     }
 
@@ -45,6 +48,10 @@ class GitSf {
     }
 
     public function getLog() {
+        if ($this->getNbCommits() == 0) {
+            return null;
+        }
+
         $output = $this->sfProcess('git log');
 
         $history = array();

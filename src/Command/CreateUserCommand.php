@@ -6,6 +6,7 @@ namespace App\Command;
 namespace App\Command;
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Util\GitSf;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
@@ -14,6 +15,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 
@@ -108,6 +111,15 @@ class CreateUserCommand extends Command
         $user->setPassword($encodedPassword);
         $this->entityManager->persist($user);
         $this->entityManager->flush();
+
+        $process = new Process(['mkdir', $username]);
+        $process->setWorkingDirectory(GitSf::GIT_FOLDERS);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
         $this->io->success(sprintf('New user : %s', $user->getUsername()));
         $event = $stopwatch->stop('add-user-command');
         if ($output->isVerbose()) {

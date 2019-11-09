@@ -52,7 +52,7 @@ class RepositoryController extends AbstractController
             $entityManager->persist($repo);
             $entityManager->flush();
 
-            $git = new GitSf($this->getUser()->getUsername() . '-' . $form->get('name')->getData());
+            $git = new GitSf($this->getUser()->getUsername(), $form->get('name')->getData());
             $git->init();
 
             return $this->redirectToRoute('repo_browse', ['user' => $this->getUser()->getUsername(), "repo" => $form->get('name')->getData()]);
@@ -150,6 +150,6 @@ class RepositoryController extends AbstractController
             throw $this->createNotFoundException('Repo inconnu');
         }
 
-        return new GitSf($user . '-' . $repo);
+        return new GitSf($user, $repo);
     }
 }
