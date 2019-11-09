@@ -5,6 +5,8 @@
 {% block body %}
     <div class="container">
         <h2><a href="{{ path('repos_user', {user: user}) }}">{{ user }}</a>/<a href="{{ path('repo_browse', {user: user, repo: repo}) }}">{{ repo }}</a></h2>
+        <code>git clone {{ url('repo_browse', {user: user, repo: repo}) }}.git</code>
+        <hr>
         {% if nbCommits != 0 %}
             <p>Commits : {{ nbCommits }}</p>
             <ul>
