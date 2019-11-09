@@ -34,7 +34,7 @@ class GitSf {
 
     public function init() {
         $this->sfProcess('mkdir ' . $this->folder, self::GIT_FOLDERS);
-        $this->sfProcess('git init');
+        $this->sfProcess('git --bare init');
     }
 
     public function getNbCommits($commit = '') {

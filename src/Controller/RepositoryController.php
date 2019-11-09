@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\GitRepository;
 use App\Form\GitRepositoryType;
 use App\Repository\GitRepositoryRepository;
+use App\Repository\UserRepository;
 use App\Util\GitRepo;
 use App\Util\GitSf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,12 +13,24 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
 use TQ\Git\Repository\Repository;
 
 class RepositoryController extends AbstractController
 {
+
+    private $gitRepositoryRepository;
+
+    private $userRepository;
+
+    public function __construct(GitRepositoryRepository $gitRepositoryRepository, UserRepository $userRepository)
+    {
+        $this->gitRepositoryRepository = $gitRepositoryRepository;
+        $this->userRepository = $userRepository;
+    }
+
     /**
      * @Route("/new", name="repo_create")
      */
@@ -33,7 +46,7 @@ class RepositoryController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->getUser()->addRepository($repo);
             $repo->setName($form->get('name')->getData());
-            $repo->setPrivate($form->get('private')->getData());
+            $repo->setPrivate(false);//$form->get('private')->getData());
 
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($repo);
@@ -55,7 +68,7 @@ class RepositoryController extends AbstractController
      */
     public function repo_browse(Request $request)
     {
-        $git = new GitSf($request->get('user') . '-' . $request->get('repo'));
+        $git = $this->checkRepo($request->get('user'), $request->get('repo'));
 
         $nbCommits = 0;
         $files = [];
@@ -77,7 +90,7 @@ class RepositoryController extends AbstractController
      */
     public function repo_browse_commits(Request $request)
     {
-        $git = new GitSf($request->get('user') . '-' . $request->get('repo'));
+        $git = $this->checkRepo($request->get('user'), $request->get('repo'));
 
         return $this->render('repo/commits.html.twig', [
             'log' => $git->getLog(),
@@ -91,7 +104,7 @@ class RepositoryController extends AbstractController
      */
     public function repo_browse_commit(Request $request)
     {
-        $git = new GitSf($request->get('user') . '-' . $request->get('repo'));
+        $git = $this->checkRepo($request->get('user'), $request->get('repo'));
 
         return $this->render('repo/browse.html.twig', [
             'nbCommits' => $git->getNbCommits($request->get('commit')),
@@ -107,7 +120,8 @@ class RepositoryController extends AbstractController
      */
     public function repo_browse_file(Request $request)
     {
-        $git = new GitSf($request->get('user') . '-' . $request->get('repo'));
+        $git = $this->checkRepo($request->get('user'), $request->get('repo'));
+
         $file = $request->get('file');
 
         $content = $git->getFile($file, $request->get('commit'));
@@ -126,5 +140,16 @@ class RepositoryController extends AbstractController
         $response->headers->set('Content-Disposition', $disposition);
 
         return $response;
+    }
+
+    private function checkRepo(string $user, string $repo) {
+        $userRepo = $this->userRepository->findOneBy(['username' => $user]);
+        $repoRepo = $this->gitRepositoryRepository->findOneBy(['user' => $userRepo, 'name' => $repo]);
+
+        if ($userRepo == null || $repoRepo == null) {
+            throw $this->createNotFoundException('Repo inconnu');
+        }
+
+        return new GitSf($user . '-' . $repo);
     }
 }

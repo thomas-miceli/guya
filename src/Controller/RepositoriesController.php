@@ -39,6 +39,11 @@ class RepositoriesController extends AbstractController
     public function repos_user(Request $request)
     {
         $user = $this->userRepository->findOneBy(['username' => $request->get('user')]);
+
+        if ($user == null) {
+            throw $this->createNotFoundException('Utilisateur inconnu');
+        }
+
         $repos = $this->gitRepositoryRepository->findBy(['user' => $user]);
 
         return $this->render('repos/user.html.twig', [
