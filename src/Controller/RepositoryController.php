@@ -8,6 +8,7 @@ use App\Repository\GitRepositoryRepository;
 use App\Repository\UserRepository;
 use App\Util\GitRepo;
 use App\Util\GitSf;
+use phpDocumentor\Reflection\Types\This;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\HeaderUtils;
@@ -126,6 +127,36 @@ class RepositoryController extends AbstractController
 
         $content = $git->getFile($file, $request->get('commit'));
 
+        $finfo = new \finfo(FILEINFO_MIME);
+        $mimetype = $finfo->buffer($content) . PHP_EOL;
+        $mimetype = explode('/', $mimetype)[0];
+
+        if ($mimetype == 'image') {
+            $content =  'data:image/png;base64,' . base64_encode($content);
+        }
+
+        preg_match("/\.[0-9a-z]+$/i", $file, $extension);
+
+        return $this->render('repo/file.html.twig', [
+            'user' => $request->get('user'),
+            'repo' => $request->get('repo'),
+            'commit' => $request->get('commit'),
+            'file' => $file,
+            'content' => $content,
+            'extension' => substr($extension[0], 1),
+            'mimetype' => $mimetype
+        ]);
+    }
+
+    /**
+     * @Route("/{user}/{repo}/download/{commit}/{file}", name="repo_download_file", requirements={"file"=".+"})
+     */
+    public function repo_download_file(Request $request)
+    {
+        $git = $this->checkRepo($request->get('user'), $request->get('repo'));
+        $file = $request->get('file');
+        $content = $git->getFile($file, $request->get('commit'));
+
         if (strpos($file, '/')) {
             $file = explode('/', $file);
             $file = array_pop($file);
@@ -137,8 +168,9 @@ class RepositoryController extends AbstractController
             $file
         );
 
-        $response->headers->set('Content-Disposition', $disposition);
 
+        $response->headers->set('Content-Type', 'application/force-download');
+        $response->headers->set('Content-Disposition', $disposition);
         return $response;
     }
 

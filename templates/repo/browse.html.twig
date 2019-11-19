@@ -8,14 +8,13 @@
         <code>git clone {{ url('repo_browse', {user: user, repo: repo}) }}.git</code>
         <hr>
         {% if nbCommits != 0 %}
+            <a href="{{ path('repo_browse_commits', {user: user, repo: repo}) }}" class="btn btn-info">Voir les commits</a><br><br>
             <p>Commits : {{ nbCommits }}</p>
             <ul>
                 {% for file in files %}
                     <li><a href="{{ path('repo_get_file', {user: user, repo: repo, commit: commit, file: file}) }}">{{ file }}</a></li>
                 {% endfor %}
             </ul>
-
-            <a href="{{ path('repo_browse_commits', {user: user, repo: repo}) }}" class="btn btn-info">Voir les commits</a>
         {% else %}
             <p>Repo vide</p>
         {% endif %}

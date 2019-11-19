@@ -5,7 +5,8 @@
 {% block body %}
     <div class="container">
         <h2><a href="{{ path('repos_user', {user: user}) }}">{{ user }}</a>/<a href="{{ path('repo_browse', {user: user, repo: repo}) }}">{{ repo }}</a></h2>
-
+        <code>git clone {{ url('repo_browse', {user: user, repo: repo}) }}.git</code>
+        <hr>
         {% if log == null%}
         <p>Aucun commit</p>
         {% else %}
@@ -15,7 +16,7 @@
                     <a href="{{ path('repo_browse_commit', {user: user, repo: repo, commit: commit.hash }) }}">{{ commit.hash }}</a>
                     <p>{{ commit.author }}</p>
                     <p>{{ commit.date }}</p>
-                    <code>{{ commit.message }}</code>
+                    <code>{{ commit.message | nl2br }}</code>
 
                 </li>
                 <hr>

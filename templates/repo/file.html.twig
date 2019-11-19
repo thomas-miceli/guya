@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Repo : {{ user }}/{{ repo }}{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h2><a href="{{ path('repos_user', {user: user}) }}">{{ user }}</a>/<a href="{{ path('repo_browse', {user: user, repo: repo}) }}">{{ repo }}</a></h2>
+        <code>{{ commit }}:{{ file }}</code>
+        <hr>
+        <a href="{{ path('repo_download_file', {user: user, repo: repo, commit: commit, file: file}) }}" class="btn btn-info">Télécharger</a><br><br>
+        {% if mimetype == 'text' %}
+        <pre><code class="language-{{ extension }}">{{ content }}</code></pre>
+        {% elseif mimetype == 'image' %}
+        <img src="{{ content }}" style="width: 100%"/>
+        {% else %}
+        <p>Prévisualisation indisponible</p>
+        {% endif %}
+    </div>
+{% endblock %}
