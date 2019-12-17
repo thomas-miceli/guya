@@ -8,11 +8,39 @@
         <code>git clone {{ url('repo_browse', {user: user, repo: repo}) }}.git</code>
         <hr>
         {% if nbCommits != 0 %}
-            <a href="{{ path('repo_browse_commits', {user: user, repo: repo}) }}" class="btn btn-info">Voir les commits</a><br><br>
+            {% if object == 'master' %}
+                <a href="{{ path('repo_browse_commits', {user: user, repo: repo}) }}" class="btn btn-info">Voir les commits</a><br><br>
+            {% else %}
+                <a href="{{ path('repo_browse_commits_object', {user: user, repo: repo, object: object}) }}" class="btn btn-info">Voir les commits</a><br><br>
+            {% endif %}
             <p>Commits : {{ nbCommits }}</p>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    {% if (path is empty and folder == '') %}
+                        <li class="breadcrumb-item active" aria-current="page">{{ repo }}</li>
+                    {% else %}
+                        {% if object == 'master' %}
+                            <li class="breadcrumb-item"><a href="{{ path('repo_browse', {user: user, repo: repo}) }}">{{ repo }}</a></li>
+                        {% else %}
+                            <li class="breadcrumb-item"><a href="{{ path('repo_browse_commit', {user: user, repo: repo, object: object}) }}">{{ repo }}</a></li>
+                        {% endif %}
+                        {% for foldername in path %}
+                            <li class="breadcrumb-item"><a href="{{ path('repo_browse_folder', {user: user, repo: repo, object: object, folder: foldername}) }}">{{ foldername }}</a></li>
+                        {% endfor %}
+                        <li class="breadcrumb-item active" aria-current="page">{{ filename }}</li>
+                    {% endif %}
+
+
+                </ol>
+            </nav>
+            <hr>
             <ul>
                 {% for file in files %}
-                    <li><a href="{{ path('repo_get_file', {user: user, repo: repo, commit: commit, file: file}) }}">{{ file }}</a></li>
+                    {% if file[1] == 'blob' %}
+                        <li><a style="color: #ffa235; font-weight: bold" href="{{ path('repo_get_file', {user: user, repo: repo, object: object, file: folder ~ file[3]}) }}">{{ file[3] }}</a></li>
+                    {% elseif file[1] == 'tree' %}
+                        <li><a style="color: #5eb5e0; font-weight: bold" href="{{ path('repo_browse_folder', {user: user, repo: repo, object: object, folder: folder ~ file[3]}) }}">{{ file[3] }}</a></li>
+                    {% endif %}
                 {% endfor %}
             </ul>
         {% else %}
@@ -20,3 +48,9 @@
         {% endif %}
     </div>
 {% endblock %}
+{#
+{% if (folder is defined) %}
+    {% set foldername = folder ~ '/' ~ file[3] %}
+{% else %}
+    {% set foldername = file[3] %}
+{% endif %}#}

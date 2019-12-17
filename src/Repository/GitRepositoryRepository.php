@@ -12,10 +12,8 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  * @method GitRepositoryRepository[]    findAll()
  * @method GitRepositoryRepository[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class GitRepositoryRepository extends ServiceEntityRepository
-{
-    public function __construct(ManagerRegistry $registry)
-    {
+class GitRepositoryRepository extends ServiceEntityRepository {
+    public function __construct(ManagerRegistry $registry) {
         parent::__construct($registry, GitRepository::class);
     }
 

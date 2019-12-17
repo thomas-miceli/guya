@@ -10,8 +10,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
-class User implements UserInterface
-{
+class User implements UserInterface {
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -40,13 +39,11 @@ class User implements UserInterface
      */
     private $repositories;
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->repositories = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
+    public function getId(): ?int {
         return $this->id;
     }
 
@@ -55,13 +52,11 @@ class User implements UserInterface
      *
      * @see UserInterface
      */
-    public function getUsername(): string
-    {
-        return (string) $this->username;
+    public function getUsername(): string {
+        return (string)$this->username;
     }
 
-    public function setUsername(string $username): self
-    {
+    public function setUsername(string $username): self {
         $this->username = $username;
 
         return $this;
@@ -70,8 +65,7 @@ class User implements UserInterface
     /**
      * @see UserInterface
      */
-    public function getRoles(): array
-    {
+    public function getRoles(): array {
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
@@ -79,8 +73,7 @@ class User implements UserInterface
         return array_unique($roles);
     }
 
-    public function setRoles(array $roles): self
-    {
+    public function setRoles(array $roles): self {
         $this->roles = $roles;
 
         return $this;
@@ -89,13 +82,11 @@ class User implements UserInterface
     /**
      * @see UserInterface
      */
-    public function getPassword(): string
-    {
-        return (string) $this->password;
+    public function getPassword(): string {
+        return (string)$this->password;
     }
 
-    public function setPassword(string $password): self
-    {
+    public function setPassword(string $password): self {
         $this->password = $password;
 
         return $this;
@@ -104,16 +95,14 @@ class User implements UserInterface
     /**
      * @see UserInterface
      */
-    public function getSalt()
-    {
+    public function getSalt() {
         // not needed when using the "bcrypt" algorithm in security.yaml
     }
 
     /**
      * @see UserInterface
      */
-    public function eraseCredentials()
-    {
+    public function eraseCredentials() {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
     }
@@ -121,13 +110,11 @@ class User implements UserInterface
     /**
      * @return Collection|GitRepository[]
      */
-    public function getRepositories(): Collection
-    {
+    public function getRepositories(): Collection {
         return $this->repositories;
     }
 
-    public function addRepository(GitRepository $repository): self
-    {
+    public function addRepository(GitRepository $repository): self {
         if (!$this->repositories->contains($repository)) {
             $this->repositories[] = $repository;
             $repository->setUser($this);
@@ -136,8 +123,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function removeRepository(GitRepository $repository): self
-    {
+    public function removeRepository(GitRepository $repository): self {
         if ($this->repositories->contains($repository)) {
             $this->repositories->removeElement($repository);
             // set the owning side to null (unless already changed)
