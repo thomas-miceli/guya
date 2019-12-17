@@ -22,7 +22,7 @@ class GitSf {
     }
 
     private function sfProcess(string $cmd, string $wd = '') {
-        //try {
+        try {
             $process = new Process(explode(' ', $cmd));
             if (empty($wd)) {
                 $process->setWorkingDirectory($this->pathFolder);
@@ -36,9 +36,9 @@ class GitSf {
             }
 
             return rtrim($process->getOutput());
-        //} catch (\Exception $e) {
-        //    throw new NotFoundHttpException('Not found');
-        //}
+        } catch (\Exception $e) {
+            throw new NotFoundHttpException('Not found');
+        }
     }
 
     public function getLog($object = 'master') {

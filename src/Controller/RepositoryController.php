@@ -71,8 +71,8 @@ class RepositoryController extends AbstractController {
     /**
      * @Route("/{user}/{repo}", name="repo_browse")
      */
-    public function repo_browse(Request $request) {
-        $git = $this->checkRepo($request->get('user'), $request->get('repo'));
+    public function repo_browse($user, $repo) {
+        $git = $this->checkRepo($user, $repo);
 
         $nbCommits = $git->getNbCommits();
         $files = [];
@@ -82,8 +82,8 @@ class RepositoryController extends AbstractController {
         }
 
         return $this->render('repo/browse.html.twig', [
-            'user' => $request->get('user'),
-            'repo' => $request->get('repo'),
+            'user' => $user,
+            'repo' => $repo,
             'nbCommits' => $nbCommits,
             'files' => $files,
             'folder' => '',
@@ -96,12 +96,12 @@ class RepositoryController extends AbstractController {
     /**
      * @Route("/{user}/{repo}/commits", name="repo_browse_commits")
      */
-    public function repo_browse_commits(Request $request) {
-        $git = $this->checkRepo($request->get('user'), $request->get('repo'));
+    public function repo_browse_commits($user, $repo) {
+        $git = $this->checkRepo($user, $repo);
 
         return $this->render('repo/commits.html.twig', [
-            'user' => $request->get('user'),
-            'repo' => $request->get('repo'),
+            'user' => $user,
+            'repo' => $repo,
             'object' => 'master',
             'branches' => $git->getBranches(),
             'log' => $git->getLog(),
@@ -111,12 +111,12 @@ class RepositoryController extends AbstractController {
     /**
      * @Route("/{user}/{repo}/commits/{object}", name="repo_browse_commits_object", requirements={"object"="^[0-9A-Za-z]+$"})
      */
-    public function repo_browse_commits_object(Request $request, $object) {
-        $git = $this->checkRepo($request->get('user'), $request->get('repo'));
+    public function repo_browse_commits_object($user, $repo, $object) {
+        $git = $this->checkRepo($user, $repo);
 
         return $this->render('repo/commits.html.twig', [
-            'user' => $request->get('user'),
-            'repo' => $request->get('repo'),
+            'user' => $user,
+            'repo' => $repo,
             'object' => $object,
             'branches' => $git->getBranches(),
             'log' => $git->getLog($object),
@@ -126,17 +126,17 @@ class RepositoryController extends AbstractController {
     /**
      * @Route("/{user}/{repo}/tree/{object}", name="repo_browse_commit", requirements={"object"="^[0-9A-Za-z]+$"})
      */
-    public function repo_browse_commit(Request $request) {
-        $git = $this->checkRepo($request->get('user'), $request->get('repo'));
+    public function repo_browse_commit($user, $repo, $object) {
+        $git = $this->checkRepo($user, $repo);
 
         return $this->render('repo/browse.html.twig', [
-            'nbCommits' => $git->getNbCommits($request->get('object')),
-            'files' => $git->getFilesOrFolder($request->get('object')),
+            'nbCommits' => $git->getNbCommits($object),
+            'files' => $git->getFilesOrFolder($object),
             'folder' => '',
             'path' => [],
-            'user' => $request->get('user'),
-            'repo' => $request->get('repo'),
-            'object' => $request->get('object'),
+            'user' => $user,
+            'repo' => $repo,
+            'object' => $object,
             'branches' => $git->getBranches(),
         ]);
     }
@@ -144,22 +144,19 @@ class RepositoryController extends AbstractController {
     /**
      * @Route("/{user}/{repo}/tree/{object}/{folder}", name="repo_browse_folder", requirements={"folder"=".+", "object"="^[0-9A-Za-z]+$"})
      */
-    public function repo_browse_folder(Request $request) {
-        $git = $this->checkRepo($request->get('user'), $request->get('repo'));
+    public function repo_browse_folder($user, $repo, $object, $folder) {
+        $git = $this->checkRepo($user, $repo);
 
-        $folder = $request->get('folder');
         if (substr($folder, -1) == '/') $folder = substr_replace($folder, '', -1); // url ends with /
 
         $path = explode('/', $folder);
         $filename = array_pop($path);
 
-        $commit = $request->get('object');
-
-        $nbCommits = $git->getNbCommits($request->get('object'));
+        $nbCommits = $git->getNbCommits($object);
         $files = [];
 
         if ($nbCommits != 0) {
-            $files = $git->getFilesOrFolder($commit, $folder);
+            $files = $git->getFilesOrFolder($object, $folder);
         }
 
         return $this->render('repo/browse.html.twig', [
@@ -168,9 +165,9 @@ class RepositoryController extends AbstractController {
             'filename' => $filename,
             'folder' => $folder . '/',
             'path' => $path,
-            'user' => $request->get('user'),
-            'repo' => $request->get('repo'),
-            'object' => $request->get('object'),
+            'user' => $user,
+            'repo' => $repo,
+            'object' => $object,
             'branches' => $git->getBranches(),
         ]);
     }
@@ -178,15 +175,13 @@ class RepositoryController extends AbstractController {
     /**
      * @Route("/{user}/{repo}/blob/{object}/{file}", name="repo_get_file", requirements={"file"=".+", "object"="^[0-9A-Za-z]+$"})
      */
-    public function repo_browse_blob(Request $request) {
-        $git = $this->checkRepo($request->get('user'), $request->get('repo'));
-
-        $file = $request->get('file');
+    public function repo_browse_blob($user, $repo, $object, $file) {
+        $git = $this->checkRepo($user, $repo);
 
         $path = explode('/', $file);
         $filename = array_pop($path);
 
-        $content = $git->getFile($file, $request->get('object'));
+        $content = $git->getFile($file, $object);
 
         $finfo = new finfo(FILEINFO_MIME);
         $mimetype = $finfo->buffer($content) . PHP_EOL;
@@ -204,9 +199,9 @@ class RepositoryController extends AbstractController {
         }
 
         return $this->render('repo/file.html.twig', [
-            'user' => $request->get('user'),
-            'repo' => $request->get('repo'),
-            'object' => $request->get('object'),
+            'user' => $user,
+            'repo' => $repo,
+            'object' => $object,
             'path' => $path,
             'filename' => $filename,
             'file' => $file,
@@ -219,10 +214,9 @@ class RepositoryController extends AbstractController {
     /**
      * @Route("/{user}/{repo}/download/{object}/{file}", name="repo_download_file", requirements={"file"=".+", "object"="^[0-9A-Za-z]+$"})
      */
-    public function repo_download_file(Request $request) {
-        $git = $this->checkRepo($request->get('user'), $request->get('repo'));
-        $file = $request->get('file');
-        $content = $git->getFile($file, $request->get('object'));
+    public function repo_download_file($user, $repo, $object, $file) {
+        $git = $this->checkRepo($user, $repo);
+        $content = $git->getFile($file, $object);
 
         if (strpos($file, '/')) {
             $file = explode('/', $file);
