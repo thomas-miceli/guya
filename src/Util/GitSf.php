@@ -2,6 +2,7 @@
 
 namespace App\Util;
 
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
@@ -21,19 +22,23 @@ class GitSf {
     }
 
     private function sfProcess(string $cmd, string $wd = '') {
-        $process = new Process(explode(' ', $cmd));
-        if (empty($wd)) {
-            $process->setWorkingDirectory($this->pathFolder);
-        } else {
-            $process->setWorkingDirectory($wd);
-        }
-        $process->run();
+        //try {
+            $process = new Process(explode(' ', $cmd));
+            if (empty($wd)) {
+                $process->setWorkingDirectory($this->pathFolder);
+            } else {
+                $process->setWorkingDirectory($wd);
+            }
+            $process->run();
 
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
+            if (!$process->isSuccessful()) {
+                throw new ProcessFailedException($process);
+            }
 
-        return $process->getOutput();
+            return rtrim($process->getOutput());
+        //} catch (\Exception $e) {
+        //    throw new NotFoundHttpException('Not found');
+        //}
     }
 
     public function getLog($object = 'master') {
@@ -42,6 +47,8 @@ class GitSf {
         }
 
         $output = $this->sfProcess('git log ' . $object);
+
+        if (empty($output)) return null;
 
         $history = array();
         $commit = array();
@@ -70,22 +77,33 @@ class GitSf {
         return $history;
     }
 
-    public function getNbCommits($commit = 'master') {
-        return $this->sfProcess('git rev-list --count ' . $commit);
+    public function getNbCommits($object = 'master') {
+        return $this->sfProcess('git rev-list --count ' . $object);
     }
 
-    public function getFile($file, $commit = 'master') {
-        return $this->sfProcess('git show ' . $commit . ':' . $file);
+    public function getFile($file, $object = 'master') {
+        return $this->sfProcess('git show ' . $object . ':' . $file);
     }
 
-    public function getFilesOrFolder($commit = 'master', $fileOrFolder = '') {
-        $files = $this->sfProcess('git ls-tree --full-name ' . $commit . ':' . $fileOrFolder);
+    public function getFilesOrFolder($object = 'master', $fileOrFolder = '') {
+        $files = $this->sfProcess('git ls-tree --full-name ' . $object . ':' . $fileOrFolder);
         $files = explode("\n", $files);
-        array_pop($files);
 
-        foreach ($files as $key => $value) $files[$key] = preg_split("/[\s,]+/", $value);
+        foreach ($files as $key => $value) {
+            $files[$key] = preg_split("/[\s,]+/", $value);
+        }
+
+        uasort($files, function ($a, $b) {
+            return strcmp($b[1], $a[1]);
+        });
 
         return $files;
+    }
+
+    public function getBranches() {
+        $branches = $this->sfProcess('git branch --format=\'%(refname:short)\'');
+
+        return explode("\n", str_replace('\'', '', $branches));
     }
 
 }

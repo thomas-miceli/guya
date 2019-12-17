@@ -5,7 +5,6 @@
 {% block body %}
     <div class="container">
         <h2><a href="{{ path('repos_user', {user: user}) }}">{{ user }}</a>/<a href="{{ path('repo_browse', {user: user, repo: repo}) }}">{{ repo }}</a></h2>
-        <p><code>{{ object }}</code></p>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 {% if object == 'master' %}
@@ -22,6 +21,7 @@
                 <li class="breadcrumb-item active" aria-current="page">{{ filename }}</li>
             </ol>
         </nav>
+        <p>{% if object | length == 40%}Commit{% else %}Branche{% endif %} : <code>{{ object }}</code></p>
         <hr>
         <a href="{{ path('repo_download_file', {user: user, repo: repo, object: object, file: file}) }}" class="btn btn-info">Télécharger</a><br><br>
         {% if mimetype == 'text' %}

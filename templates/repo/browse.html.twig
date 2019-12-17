@@ -9,11 +9,18 @@
         <hr>
         {% if nbCommits != 0 %}
             {% if object == 'master' %}
-                <a href="{{ path('repo_browse_commits', {user: user, repo: repo}) }}" class="btn btn-info">Voir les commits</a><br><br>
+                <a href="{{ path('repo_browse_commits', {user: user, repo: repo}) }}" class="btn btn-info">Commits ({{ nbCommits }})</a>
             {% else %}
-                <a href="{{ path('repo_browse_commits_object', {user: user, repo: repo, object: object}) }}" class="btn btn-info">Voir les commits</a><br><br>
+                <a href="{{ path('repo_browse_commits_object', {user: user, repo: repo, object: object}) }}" class="btn btn-info">Commits ({{ nbCommits }})</a>
             {% endif %}
-            <p>Commits : {{ nbCommits }}</p>
+            <div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Branches</button>
+                <div class="dropdown-menu" style="max-height: 160px; overflow: auto;">
+                    {% for branch in branches %}
+                        <a class="dropdown-item {% if branch == object %}bg-info text-white{% endif %}" type="button" href="{{ path('repo_browse_commit', {user: user, repo: repo, object: branch}) }}">{{branch}}</a>
+                    {% endfor %}
+                </div>
+            </div><br><br>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     {% if (path is empty and folder == '') %}
@@ -29,17 +36,16 @@
                         {% endfor %}
                         <li class="breadcrumb-item active" aria-current="page">{{ filename }}</li>
                     {% endif %}
-
-
                 </ol>
             </nav>
+            <p>{% if object | length == 40%}Commit{% else %}Branche{% endif %} : <code>{{ object }}</code></p>
             <hr>
             <ul>
                 {% for file in files %}
                     {% if file[1] == 'blob' %}
                         <li><a style="color: #ffa235; font-weight: bold" href="{{ path('repo_get_file', {user: user, repo: repo, object: object, file: folder ~ file[3]}) }}">{{ file[3] }}</a></li>
                     {% elseif file[1] == 'tree' %}
-                        <li><a style="color: #5eb5e0; font-weight: bold" href="{{ path('repo_browse_folder', {user: user, repo: repo, object: object, folder: folder ~ file[3]}) }}">{{ file[3] }}</a></li>
+                        <li><a style="color: #5eb5e0; font-weight: bold" href="{{ path('repo_browse_folder', {user: user, repo: repo, object: object, folder: folder ~ file[3]}) }}">{{ file[3] }}/</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>
@@ -48,9 +54,3 @@
         {% endif %}
     </div>
 {% endblock %}
-{#
-{% if (folder is defined) %}
-    {% set foldername = folder ~ '/' ~ file[3] %}
-{% else %}
-    {% set foldername = file[3] %}
-{% endif %}#}
