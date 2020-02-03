@@ -20,23 +20,21 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 
-class CreateUserCommand extends Command {
+class DeleteUserCommand extends Command {
 
     // to make your command lazily loaded, configure the $defaultName static property,
     // so it will be instantiated only when the command is actually called.
-    protected static $defaultName = 'guya:au';
+    protected static $defaultName = 'guya:ru';
     /**
      * @var SymfonyStyle
      */
     private $io;
     private $entityManager;
-    private $passwordEncoder;
     private $users;
 
-    public function __construct(EntityManagerInterface $em, UserPasswordEncoderInterface $encoder, UserRepository $users) {
+    public function __construct(EntityManagerInterface $em, UserRepository $users) {
         parent::__construct();
         $this->entityManager = $em;
-        $this->passwordEncoder = $encoder;
         $this->users = $users;
     }
 
@@ -45,12 +43,11 @@ class CreateUserCommand extends Command {
      */
     protected function configure(): void {
         $this
-            ->setDescription('Creates users and stores them in the database')
+            ->setDescription('Deletes an existing user')
             ->setHelp($this->getCommandHelp())
             // commands can optionally define arguments and/or options (mandatory and optional)
             // see https://symfony.com/doc/current/components/console/console_arguments.html
-            ->addArgument('username', InputArgument::REQUIRED, 'Username')
-            ->addArgument('password', InputArgument::REQUIRED, 'Password');
+            ->addArgument('username', InputArgument::REQUIRED, 'Username');
     }
 
     /**
@@ -60,16 +57,8 @@ class CreateUserCommand extends Command {
      */
     private function getCommandHelp(): string {
         return <<<'HELP'
-The <info>%command.name%</info> command creates new users and saves them in the database:
-  <info>php %command.full_name%</info> <comment>username password email</comment>
-By default the command creates regular users. To create administrator users,
-add the <comment>--admin</comment> option:
-  <info>php %command.full_name%</info> username password email <comment>--admin</comment>
-If you omit any of the three required arguments, the command will ask you to
-provide the missing values:
-  # command will ask you for the email and password
+The <info>%command.name%</info> command deletes existing users:
   <info>php %command.full_name%</info> <comment>username</comment>
-  # command will ask you for all arguments
   <info>php %command.full_name%</info>
 HELP;
     }
@@ -79,15 +68,15 @@ HELP;
     }
 
     protected function interact(InputInterface $input, OutputInterface $output) {
-        if (null !== $input->getArgument('username') && null !== $input->getArgument('password')) {
+        if (null !== $input->getArgument('username')) {
             return;
         }
-        $this->io->title('Add User Command Interactive Wizard');
+        $this->io->title('Remove User Command Interactive Wizard');
         $this->io->text([
             'If you prefer to not use this interactive wizard, provide the',
             'arguments required by this command as follows:',
             '',
-            ' $ php bin/console app:add-user username password',
+            ' $ php bin/console guya:rm-user username',
             '',
             'Now we\'ll ask you for the value of all the missing command arguments.',
         ]);
@@ -99,14 +88,6 @@ HELP;
             $username = $this->io->ask('Username');
             $input->setArgument('username', $username);
         }
-        // Ask for the password if it's not defined
-        $password = $input->getArgument('password');
-        if (null !== $password) {
-            $this->io->text(' > <info>Password</info>: ' . str_repeat('*', mb_strlen($password)));
-        } else {
-            $password = $this->io->askHidden('Password (your type will be hidden)');
-            $input->setArgument('password', $password);
-        }
     }
 
     /**
@@ -115,21 +96,16 @@ HELP;
      */
     protected function execute(InputInterface $input, OutputInterface $output): void {
         $stopwatch = new Stopwatch();
-        $stopwatch->start('add-user-command');
+        $stopwatch->start('rm-user-command');
         $username = $input->getArgument('username');
-        $plainPassword = $input->getArgument('password');
         // make sure to validate the user data is correct
         $this->validateUserData($username);
         // create the user and encode its password
-        $user = new User();
-        $user->setUsername($username);
-        // See https://symfony.com/doc/current/book/security.html#security-encoding-password
-        $encodedPassword = $this->passwordEncoder->encodePassword($user, $plainPassword);
-        $user->setPassword($encodedPassword);
-        $this->entityManager->persist($user);
+        $user = $this->users->findOneBy(['username' => $username]);
+        $this->entityManager->remove($user);
         $this->entityManager->flush();
 
-        $process = new Process(['mkdir', $username]);
+        $process = new Process(['rm', '-rf', $username]);
         $process->setWorkingDirectory(GitHelper::GIT_FOLDERS_CMD);
         $process->run();
 
@@ -137,18 +113,17 @@ HELP;
             throw new ProcessFailedException($process);
         }
 
-        $this->io->success(sprintf('New user : %s', $user->getUsername()));
-        $event = $stopwatch->stop('add-user-command');
+        $this->io->success(sprintf('Deleted user : %s', $user->getUsername()));
+        $event = $stopwatch->stop('rm-user-command');
         if ($output->isVerbose()) {
             $this->io->comment(sprintf('New user database id: %d / Elapsed time: %.2f ms / Consumed memory: %.2f MB', $user->getId(), $event->getDuration(), $event->getMemory() / (1024 ** 2)));
         }
     }
 
     private function validateUserData($username): void {
-        // first check if a user with the same username already exists.
         $existingUser = $this->users->findOneBy(['username' => $username]);
-        if (null !== $existingUser) {
-            throw new RuntimeException(sprintf('There is already a user registered with the "%s" username.', $username));
+        if (null === $existingUser) {
+            throw new RuntimeException(sprintf('There is no user registered with the "%s" username.', $username));
         }
     }
 }

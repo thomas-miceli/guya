@@ -3,11 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\GitRepository;
+use App\Entity\User;
 use App\Form\GitRepositoryType;
+use App\Form\RepositoryType;
 use App\Repository\GitRepositoryRepository;
 use App\Repository\UserRepository;
-use App\Util\GitSf;
+use App\Util\GitHelper;
 use finfo;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
@@ -39,17 +42,21 @@ class RepositoryController extends AbstractController {
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->getUser()->addRepository($repo);
-            $repo->setName($form->get('name')->getData());
+            $repoName = $form->get('repoName')->getData();
+            $repo->setrepoName($repoName);
             $repo->setPrivate(false);//$form->get('private')->getData());
 
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($repo);
             $entityManager->flush();
 
-            $git = new GitSf($this->getUser()->getUsername(), $form->get('name')->getData());
+            $git = new GitHelper($this->getUser(), $repoName);
             $git->init();
 
-            return $this->redirectToRoute('repo_browse', ['user' => $this->getUser()->getUsername(), "repo" => $form->get('name')->getData()]);
+            return $this->redirectToRoute('repo_browse', [
+                'username' => $this->getUser(),
+                'repoName' => $repoName
+            ]);
         }
 
         return $this->render('repo/new.html.twig', [
@@ -57,22 +64,11 @@ class RepositoryController extends AbstractController {
         ]);
     }
 
-    private function checkRepo(string $user, string $repo) {
-        $userRepo = $this->userRepository->findOneBy(['username' => $user]);
-        $repoRepo = $this->gitRepositoryRepository->findOneBy(['user' => $userRepo, 'name' => $repo]);
-
-        if ($userRepo == null || $repoRepo == null) {
-            throw $this->createNotFoundException('Repo inconnu');
-        }
-
-        return new GitSf($user, $repo);
-    }
-
     /**
-     * @Route("/{user}/{repo}", name="repo_browse")
+     * @Route("/{username}/{repoName}", name="repo_browse")
      */
-    public function repo_browse($user, $repo) {
-        $git = $this->checkRepo($user, $repo);
+    public function repo_browse(User $user, GitRepository $repo) {
+        $git = new GitHelper($user, $repo->getrepoName());
 
         $nbCommits = $git->getNbCommits();
         $files = [];
@@ -94,10 +90,10 @@ class RepositoryController extends AbstractController {
     }
 
     /**
-     * @Route("/{user}/{repo}/commits", name="repo_browse_commits")
+     * @Route("/{username}/{repoName}/commits", name="repo_browse_commits")
      */
-    public function repo_browse_commits($user, $repo) {
-        $git = $this->checkRepo($user, $repo);
+    public function repo_browse_commits(User $user, GitRepository $repo) {
+        $git = new GitHelper($user->getUsername(), $repo->getrepoName());
 
         return $this->render('repo/commits.html.twig', [
             'user' => $user,
@@ -109,10 +105,10 @@ class RepositoryController extends AbstractController {
     }
 
     /**
-     * @Route("/{user}/{repo}/commits/{object}", name="repo_browse_commits_object", requirements={"object"="^[0-9A-Za-z]+$"})
+     * @Route("/{username}/{repoName}/commits/{object}", name="repo_browse_commits_object", requirements={"object"="^[0-9A-Za-z]+$"})
      */
-    public function repo_browse_commits_object($user, $repo, $object) {
-        $git = $this->checkRepo($user, $repo);
+    public function repo_browse_commits_object(User $user, GitRepository $repo, $object) {
+        $git = new GitHelper($user->getUsername(), $repo->getrepoName());
 
         return $this->render('repo/commits.html.twig', [
             'user' => $user,
@@ -124,10 +120,10 @@ class RepositoryController extends AbstractController {
     }
 
     /**
-     * @Route("/{user}/{repo}/tree/{object}", name="repo_browse_commit", requirements={"object"="^[0-9A-Za-z]+$"})
+     * @Route("/{username}/{repoName}/tree/{object}", name="repo_browse_commit", requirements={"object"="^[0-9A-Za-z]+$"})
      */
-    public function repo_browse_commit($user, $repo, $object) {
-        $git = $this->checkRepo($user, $repo);
+    public function repo_browse_commit(User $user, GitRepository $repo, $object) {
+        $git = new GitHelper($user->getUsername(), $repo->getrepoName());
 
         return $this->render('repo/browse.html.twig', [
             'nbCommits' => $git->getNbCommits($object),
@@ -142,10 +138,10 @@ class RepositoryController extends AbstractController {
     }
 
     /**
-     * @Route("/{user}/{repo}/tree/{object}/{folder}", name="repo_browse_folder", requirements={"folder"=".+", "object"="^[0-9A-Za-z]+$"})
+     * @Route("/{username}/{repoName}/tree/{object}/{folder}", name="repo_browse_folder", requirements={"folder"=".+", "object"="^[0-9A-Za-z]+$"})
      */
-    public function repo_browse_folder($user, $repo, $object, $folder) {
-        $git = $this->checkRepo($user, $repo);
+    public function repo_browse_folder(User $user, GitRepository $repo, $object, $folder) {
+        $git = new GitHelper($user->getUsername(), $repo->getrepoName());
 
         if (substr($folder, -1) == '/') $folder = substr_replace($folder, '', -1); // url ends with /
 
@@ -173,10 +169,10 @@ class RepositoryController extends AbstractController {
     }
 
     /**
-     * @Route("/{user}/{repo}/blob/{object}/{file}", name="repo_get_file", requirements={"file"=".+", "object"="^[0-9A-Za-z]+$"})
+     * @Route("/{username}/{repoName}/blob/{object}/{file}", name="repo_get_file", requirements={"file"=".+", "object"="^[0-9A-Za-z]+$"})
      */
-    public function repo_browse_blob($user, $repo, $object, $file) {
-        $git = $this->checkRepo($user, $repo);
+    public function repo_browse_blob(User $user, GitRepository $repo, $object, $file) {
+        $git = new GitHelper($user->getUsername(), $repo->getrepoName());
 
         $path = explode('/', $file);
         $filename = array_pop($path);
@@ -212,10 +208,10 @@ class RepositoryController extends AbstractController {
     }
 
     /**
-     * @Route("/{user}/{repo}/download/{object}/{file}", name="repo_download_file", requirements={"file"=".+", "object"="^[0-9A-Za-z]+$"})
+     * @Route("/{username}/{repoName}/download/{object}/{file}", name="repo_download_file", requirements={"file"=".+", "object"="^[0-9A-Za-z]+$"})
      */
-    public function repo_download_file($user, $repo, $object, $file) {
-        $git = $this->checkRepo($user, $repo);
+    public function repo_download_file(User $user, GitRepository $repo, $object, $file) {
+        $git = new GitHelper($user->getUsername(), $repo->getrepoName());
         $content = $git->getFile($file, $object);
 
         if (strpos($file, '/')) {
@@ -229,10 +225,67 @@ class RepositoryController extends AbstractController {
             $file
         );
 
-
         $response->headers->set('Content-Type', 'application/force-download');
         $response->headers->set('Content-Disposition', $disposition);
 
         return $response;
+    }
+
+    /**
+     * @Route("/{username}/{repoName}/options", name="repo_options")
+     */
+    public function repo_options(Request $request, User $user, GitRepository $repo)
+    {
+        if ($this->getUser() != $user) {
+            return $this->redirect('/');
+        }
+
+        $oldRepoName = $repo->getRepoName();
+
+        $form = $this->createForm(RepositoryType::class, $repo);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            if ($oldRepoName != $repo->getRepoName()) {
+                $git = new GitHelper($user->getUsername(), $oldRepoName);
+                $git->rename($repo->getRepoName());
+            }
+
+            $this->getDoctrine()->getManager()->flush();
+
+            return $this->redirectToRoute('repo_browse', [
+                'username' => $this->getUser(),
+                'repoName' => $repo
+            ]);
+        }
+
+        return $this->render('repo/options.html.twig', [
+            'user' => $user,
+            'repo' => $repo,
+            'form' => $form->createView()
+        ]);
+    }
+
+    /**
+     * @Route("/{username}/{repoName}/delete", methods="POST", name="repo_delete")
+     */
+    public function delete(Request $request, User $user, GitRepository $repo): Response
+    {
+        if ($this->getUser() != $user) {
+            return $this->redirectToRoute('repos');
+        }
+
+        if (!$this->isCsrfTokenValid('delete', $request->request->get('token'))) {
+            return $this->redirectToRoute('repo_browse', ['username' => $user, 'repoName' => $repo]);
+        }
+
+        $git = new GitHelper($user->getUsername(), $repo->getrepoName());
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->remove($repo);
+        $entityManager->flush();
+        $git->delete();
+
+        return $this->redirectToRoute('repos');
     }
 }

@@ -4,10 +4,11 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\GitRepositoryRepository")
- * @UniqueEntity(fields={"name"}, message="Ce repo existe déjà")
+ * @UniqueEntity(fields={"repoName"}, message="Ce repo existe déjà")
  */
 class GitRepository {
     /**
@@ -19,8 +20,10 @@ class GitRepository {
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\Type(type="alnum")
+     * @Assert\NotBlank
      */
-    private $name;
+    private $repoName;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="repositories")
@@ -33,16 +36,21 @@ class GitRepository {
      */
     private $private = false;
 
+    public function __toString() : string
+    {
+        return $this->repoName;
+    }
+
     public function getId(): ?int {
         return $this->id;
     }
 
-    public function getName(): ?string {
-        return $this->name;
+    public function getRepoName(): ?string {
+        return $this->repoName;
     }
 
-    public function setName(string $name): self {
-        $this->name = $name;
+    public function setRepoName(string $name): self {
+        $this->repoName = $name;
 
         return $this;
     }

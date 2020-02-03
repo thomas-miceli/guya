@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Repo : {{ user }}/{{ repo }}{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h2><a href="{{ path('repos_user', {username: user}) }}">{{ user }}</a>/<a href="{{ path('repo_browse', {username: user, repoName: repo}) }}">{{ repo }}</a></h2>
+        <hr>
+        <h5>Renommer ce dépôt</h5>
+        {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <button type="submit" class="btn btn-warning">
+            <i class="fa fa-pen" aria-hidden="true"></i>
+            Modifier
+        </button>
+        {{ form_end(form) }}
+        <hr>
+        <h5>Supprimer ce dépôt</h5>
+        <form action="{{ url('repo_delete', {username: user, repoName: repo}) }}" method="post" id="delete-form">
+            <input type="hidden" name="token" value="{{ csrf_token('delete') }}" />
+            <button type="submit" class="btn btn-danger">
+                <i class="fa fa-trash" aria-hidden="true"></i>
+                Supprimer
+            </button>
+        </form>
+    </div>
+{% endblock %}

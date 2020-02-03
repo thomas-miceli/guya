@@ -7,7 +7,7 @@
         <h2>Repos de {{ user.username }}</h2>
         <ul>
             {% for repo in repos %}
-                <li><a href="{{ path('repos_user', {user: repo.user.username}) }}">{{ repo.user.username }}</a>/<a href="{{ path('repo_browse', {user: repo.user.username, repo: repo.name}) }}">{{ repo.name }}</a></li>
+                <li><a href="{{ path('repos_user', {username: repo.user.username}) }}">{{ repo.user.username }}</a>/<a href="{{ path('repo_browse', {username: repo.user.username, repoName: repo.repoName}) }}">{{ repo.repoName }}</a></li>
             {% endfor %}
         </ul>
     </div>

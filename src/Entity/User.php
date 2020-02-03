@@ -35,12 +35,17 @@ class User implements UserInterface {
     private $password;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\GitRepository", mappedBy="user")
+     * @ORM\OneToMany(targetEntity="App\Entity\GitRepository", mappedBy="user", orphanRemoval=true)
      */
     private $repositories;
 
     public function __construct() {
         $this->repositories = new ArrayCollection();
+    }
+
+    public function __toString() : string
+    {
+        return $this->username;
     }
 
     public function getId(): ?int {

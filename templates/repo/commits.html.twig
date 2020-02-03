@@ -4,26 +4,28 @@
 
 {% block body %}
     <div class="container">
-        <h2><a href="{{ path('repos_user', {user: user}) }}">{{ user }}</a>/<a href="{{ path('repo_browse', {user: user, repo: repo}) }}">{{ repo }}</a></h2>
-        <code>git clone {{ url('repo_browse', {user: user, repo: repo}) }}.git</code>
+        <h2><a href="{{ path('repos_user', {username: user}) }}">{{ user }}</a>/<a href="{{ path('repo_browse', {username: user, repoName: repo}) }}">{{ repo }}</a></h2>
+        <code>git clone {{ url('repo_browse', {username: user, repoName: repo}) }}.git</code><br>
+        <code>git remote add origin {{ url('repo_browse', {username: user, repoName: repo}) }}.git</code>
         <hr>
-        <div class="btn-group">
-            <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Branches</button>
-            <div class="dropdown-menu" style="max-height: 160px; overflow: auto;">
-                {% for branch in branches %}
-                    <a class="dropdown-item {% if branch == object %}bg-info text-white{% endif %}" type="button" href="{{ path('repo_browse_commits_object', {user: user, repo: repo, object: branch}) }}">{{branch}}</a>
-                {% endfor %}
-            </div>
-        </div><br><br>
-        <p>{% if object | length == 40%}Commit{% else %}Branche{% endif %} : <code>{{ object }}</code></p>
-        <hr>
+
         {% if log == null%}
             <p>Aucun commit</p>
         {% else %}
+            <div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Branches</button>
+                <div class="dropdown-menu" style="max-height: 160px; overflow: auto;">
+                    {% for branch in branches %}
+                        <a class="dropdown-item {% if branch == object %}bg-info text-white{% endif %}" type="button" href="{{ path('repo_browse_commits_object', {username: user, repoName: repo, object: branch}) }}">{{branch}}</a>
+                    {% endfor %}
+                </div>
+            </div><br><br>
+            <p>{% if object | length == 40%}Commit{% else %}Branche{% endif %} : <code>{{ object }}</code></p>
+            <hr>
             <ul>
                 {% for commit in log %}
                     <li>
-                        <a href="{{ path('repo_browse_commit', {user: user, repo: repo, object: commit.hash }) }}">{{ commit.hash }}</a>
+                        <a href="{{ path('repo_browse_commit', {username: user, repoName: repo, object: commit.hash }) }}">{{ commit.hash }}</a>
                         <p>{{ commit.author }}</p>
                         <p>{{ commit.date }}</p>
                         <code>{{ commit.message | nl2br }}</code>

@@ -11,7 +11,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class GitRepositoryType extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $builder
-            ->add('name', TextType::class, [
+            ->add('repoName', TextType::class, [
                 'label' => false,
                 'attr' => [
                     'placeholder' => 'Nom',

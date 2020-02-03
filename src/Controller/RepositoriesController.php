@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Repository\GitRepositoryRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -31,15 +32,9 @@ class RepositoriesController extends AbstractController {
     }
 
     /**
-     * @Route("/{user}", name="repos_user")
+     * @Route("/{username}", name="repos_user")
      */
-    public function repos_user(Request $request) {
-        $user = $this->userRepository->findOneBy(['username' => $request->get('user')]);
-
-        if ($user == null) {
-            throw $this->createNotFoundException('Utilisateur inconnu');
-        }
-
+    public function repos_user(Request $request, User $user) {
         $repos = $this->gitRepositoryRepository->findBy(['user' => $user]);
 
         return $this->render('repos/user.html.twig', [

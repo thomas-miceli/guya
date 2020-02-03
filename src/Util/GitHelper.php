@@ -6,13 +6,16 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
-class GitSf {
+class GitHelper {
 
-    public const GIT_FOLDERS = '/home/thomas/gitlist/';
+    public const GIT_FOLDERS = '../repos/';
+    public const GIT_FOLDERS_CMD = './repos/';
 
+    private $userFolder;
     private $pathFolder;
 
     public function __construct(string $user, string $folderName) {
+        $this->userFolder = self::GIT_FOLDERS . $user . '/';
         $this->pathFolder = self::GIT_FOLDERS . $user . '/' . $folderName . '.git';
     }
 
@@ -21,24 +24,28 @@ class GitSf {
         $this->sfProcess('git --bare init');
     }
 
+    public function rename(string $name) {
+        $this->sfProcess('mv ' . $this->pathFolder . ' ' . $this->userFolder . $name . '.git', self::GIT_FOLDERS);
+    }
+
+    public function delete() {
+        $this->sfProcess('rm -rf ' . $this->pathFolder, self::GIT_FOLDERS);
+    }
+
     private function sfProcess(string $cmd, string $wd = '') {
-        //try {
-            $process = new Process(explode(' ', $cmd));
-            if (empty($wd)) {
-                $process->setWorkingDirectory($this->pathFolder);
-            } else {
-                $process->setWorkingDirectory($wd);
-            }
-            $process->run();
+        $process = new Process(explode(' ', $cmd));
+        if (empty($wd)) {
+            $process->setWorkingDirectory($this->pathFolder);
+        } else {
+            $process->setWorkingDirectory($wd);
+        }
+        $process->run();
 
-            if (!$process->isSuccessful()) {
-                throw new ProcessFailedException($process);
-            }
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
 
-            return rtrim($process->getOutput());
-        //} catch (\Exception $e) {
-        //    throw new NotFoundHttpException('Not found');
-        //}
+        return rtrim($process->getOutput());
     }
 
     public function getLog($object = 'master') {
