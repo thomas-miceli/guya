@@ -4,7 +4,7 @@ Github €CO+
 ```
 $ cp .env .env.local
 ```
-* Change DATABASE_URL on the new file then run
+* Change [DATABASE_URL](https://github.com/thomas-miceli/guya/blob/master/.env#L28) on the new file then run
 
 ```
 $ ./install.sh
