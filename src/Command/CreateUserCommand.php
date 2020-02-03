@@ -87,7 +87,7 @@ HELP;
             'If you prefer to not use this interactive wizard, provide the',
             'arguments required by this command as follows:',
             '',
-            ' $ php bin/console app:add-user username password',
+            ' $ php bin/console app:au username password',
             '',
             'Now we\'ll ask you for the value of all the missing command arguments.',
         ]);
@@ -130,6 +130,14 @@ HELP;
         $this->entityManager->flush();
 
         $process = new Process(['mkdir', $username]);
+        $process->setWorkingDirectory(GitHelper::GIT_FOLDERS_CMD);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        $process = new Process(['htpasswd', '-b', '.gitpasswd', $username, $plainPassword]);
         $process->setWorkingDirectory(GitHelper::GIT_FOLDERS_CMD);
         $process->run();
 

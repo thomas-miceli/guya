@@ -76,7 +76,7 @@ HELP;
             'If you prefer to not use this interactive wizard, provide the',
             'arguments required by this command as follows:',
             '',
-            ' $ php bin/console guya:rm-user username',
+            ' $ php bin/console guya:ru username',
             '',
             'Now we\'ll ask you for the value of all the missing command arguments.',
         ]);
@@ -106,6 +106,14 @@ HELP;
         $this->entityManager->flush();
 
         $process = new Process(['rm', '-rf', $username]);
+        $process->setWorkingDirectory(GitHelper::GIT_FOLDERS_CMD);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        $process = new Process(['htpasswd', '-D', '.gitpasswd', $username]);
         $process->setWorkingDirectory(GitHelper::GIT_FOLDERS_CMD);
         $process->run();
 
