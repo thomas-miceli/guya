@@ -21,7 +21,7 @@ class GitHelper {
 
     public function init() {
         $this->sfProcess('mkdir ' . $this->pathFolder, self::GIT_FOLDERS);
-        $this->sfProcess('git --bare init');
+        $this->sfProcess('git init --bare --template=../../__bare/');
     }
 
     public function rename(string $name) {

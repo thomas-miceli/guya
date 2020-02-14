@@ -113,14 +113,6 @@ HELP;
             throw new ProcessFailedException($process);
         }
 
-        $process = new Process(['htpasswd', '-D', '.gitpasswd', $username]);
-        $process->setWorkingDirectory(GitHelper::GIT_FOLDERS_CMD);
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
-
         $this->io->success(sprintf('Deleted user : %s', $user->getUsername()));
         $event = $stopwatch->stop('rm-user-command');
         if ($output->isVerbose()) {

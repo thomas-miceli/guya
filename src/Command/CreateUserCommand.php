@@ -137,14 +137,6 @@ HELP;
             throw new ProcessFailedException($process);
         }
 
-        $process = new Process(['htpasswd', '-b', '.gitpasswd', $username, $plainPassword]);
-        $process->setWorkingDirectory(GitHelper::GIT_FOLDERS_CMD);
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
-
         $this->io->success(sprintf('New user : %s', $user->getUsername()));
         $event = $stopwatch->stop('add-user-command');
         if ($output->isVerbose()) {
