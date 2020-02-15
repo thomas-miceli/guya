@@ -1,13 +1,9 @@
 # guya
 Github €CO+
 
+* Set up the project with
 ```
-$ cp .env .env.local
-```
-* Change [DATABASE_URL](https://github.com/thomas-miceli/guya/blob/master/.env#L28) on the new file then run
-
-```
-$ ./install.sh
+$ ./install.sh <db_user> <db_password> <db_name>
 ```
 
 * Create/delete user
@@ -18,5 +14,6 @@ $ php bin/console guya:ru
 
 * Start the server
 ```
-$ php -S localhost:8000 -t public
+$ symfony serve
 ```
+or set root `/public` with apache/nginx.
