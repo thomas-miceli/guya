@@ -39,13 +39,14 @@ class User implements UserInterface {
      */
     private $repositories;
 
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\GitRepository", mappedBy="collaborators")
+     */
+    private $gitRepositories;
+
     public function __construct() {
         $this->repositories = new ArrayCollection();
-    }
-
-    public function __toString() : string
-    {
-        return $this->username;
+        $this->gitRepositories = new ArrayCollection();
     }
 
     public function getId(): ?int {
@@ -135,6 +136,34 @@ class User implements UserInterface {
             if ($repository->getUser() === $this) {
                 $repository->setUser(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|GitRepository[]
+     */
+    public function getGitRepositories(): Collection
+    {
+        return $this->gitRepositories;
+    }
+
+    public function addGitRepository(GitRepository $gitRepository): self
+    {
+        if (!$this->gitRepositories->contains($gitRepository)) {
+            $this->gitRepositories[] = $gitRepository;
+            $gitRepository->addCollaborator($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGitRepository(GitRepository $gitRepository): self
+    {
+        if ($this->gitRepositories->contains($gitRepository)) {
+            $this->gitRepositories->removeElement($gitRepository);
+            $gitRepository->removeCollaborator($this);
         }
 
         return $this;

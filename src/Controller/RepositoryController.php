@@ -4,18 +4,17 @@ namespace App\Controller;
 
 use App\Entity\GitRepository;
 use App\Entity\User;
-use App\Form\GitRepositoryType;
-use App\Form\RepositoryType;
+use App\Form\AddContributorType;
+use App\Form\GitRepositoryCreateType;
+use App\Form\GitRepositoryOptionsType;
 use App\Repository\GitRepositoryRepository;
 use App\Repository\UserRepository;
 use App\Util\GitHelper;
 use finfo;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 class RepositoryController extends AbstractController {
@@ -37,20 +36,20 @@ class RepositoryController extends AbstractController {
 
         $repo = new GitRepository();
 
-        $form = $this->createForm(GitRepositoryType::class, $repo);
+        $form = $this->createForm(GitRepositoryCreateType::class, $repo);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->getUser()->addRepository($repo);
             $repoName = $form->get('repoName')->getData();
             $repo->setrepoName($repoName);
-            $repo->setPrivate(false);//$form->get('private')->getData());
+            $repo->setPrivate($form->get('private')->getData());
 
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($repo);
             $entityManager->flush();
 
-            $git = new GitHelper($this->getUser(), $repoName);
+            $git = new GitHelper($this->getUser()->getUsername(), $repoName);
             $git->init();
 
             return $this->redirectToRoute('repo_browse', [
@@ -68,7 +67,7 @@ class RepositoryController extends AbstractController {
      * @Route("/{username}/{repoName}", name="repo_browse")
      */
     public function repo_browse(User $user, GitRepository $repo) {
-        $git = new GitHelper($user, $repo->getrepoName());
+        $git = new GitHelper($user->getUsername(), $repo->getrepoName());
 
         $nbCommits = $git->getNbCommits();
         $files = [];
@@ -237,12 +236,12 @@ class RepositoryController extends AbstractController {
     public function repo_options(Request $request, User $user, GitRepository $repo)
     {
         if ($this->getUser() != $user) {
-            return $this->redirect('/');
+            return $this->redirectToRoute('repo_browse', ['username' => $user->getUsername(), 'repoName' => $repo->getRepoName()]);
         }
 
         $oldRepoName = $repo->getRepoName();
 
-        $form = $this->createForm(RepositoryType::class, $repo);
+        $form = $this->createForm(GitRepositoryOptionsType::class, $repo);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -272,7 +271,7 @@ class RepositoryController extends AbstractController {
     public function delete(Request $request, User $user, GitRepository $repo): Response
     {
         if ($this->getUser() != $user) {
-            return $this->redirectToRoute('repos');
+            return $this->redirectToRoute('repo_browse', ['username' => $user->getUsername(), 'repoName' => $repo->getRepoName()]);
         }
 
         if (!$this->isCsrfTokenValid('delete', $request->request->get('token'))) {
@@ -287,5 +286,77 @@ class RepositoryController extends AbstractController {
         $git->delete();
 
         return $this->redirectToRoute('repos');
+    }
+
+    /**
+     * @Route("/{username}/{repoName}/collaborators", name="repo_collaborators")
+     */
+    public function collaborators(Request $request, User $user, GitRepository $repo) {
+        if ($this->getUser() != $user) {
+            return $this->redirectToRoute('repos');
+        }
+
+        $form = $this->createForm(AddContributorType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $username = $form->get('username')->getData();
+            $userObj = $this->userRepository->findOneBy(['username' => $username]);
+
+            if ($userObj == null) {
+                $this->addFlash('error', 'Utilisateur inconnu.');
+                return $this->redirectToRoute('repo_collaborators', ['username' => $user->getUsername(), 'repoName' => $repo->getRepoName()]);
+            }
+            if ($userObj == $this->getUser()) {
+                $this->addFlash('error', 'Vous êtes déjà admin de ce dépôt.');
+                return $this->redirectToRoute('repo_collaborators', ['username' => $user->getUsername(), 'repoName' => $repo->getRepoName()]);
+            }
+            if (in_array($userObj, $repo->getCollaborators()->toArray())) {
+                $this->addFlash('error', 'Utilisateur déjà ajouté.');
+                return $this->redirectToRoute('repo_collaborators', ['username' => $user->getUsername(), 'repoName' => $repo->getRepoName()]);
+            }
+
+            $this->addFlash('success', 'Utilisateur <b>' . $userObj->getUsername() . '</b> ajouté.');
+
+            $repo->addCollaborator($userObj);
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($repo);
+            $entityManager->flush();
+
+        }
+
+        return $this->render('repo/collaborators.html.twig', [
+            'user' => $user,
+            'repo' => $repo,
+            'collaborators' => $repo->getCollaborators(),
+            'form' => $form->createView()
+        ]);
+    }
+
+    /**
+     * @Route("/{username}/{repoName}/collaborators/remove", methods="POST", name="repo_collaborators_remove")
+     */
+    public function collaborators_delete(Request $request, User $user, GitRepository $repo): Response
+    {
+        if ($this->getUser() != $user) {
+            return $this->redirectToRoute('repo_browse', ['username' => $user->getUsername(), 'repoName' => $repo->getRepoName()]);
+        }
+
+        if (!$this->isCsrfTokenValid('remove_collab', $request->request->get('token'))) {
+            return $this->redirectToRoute('repo_browse', ['username' => $user, 'repoName' => $repo]);
+        }
+
+        if (($collborator = $this->userRepository->findOneBy(['username' => $request->query->get('collaborator')])) == null
+        || !$repo->getCollaborators()->contains($collborator)) {
+            $this->addFlash('error', 'L\'utilisateur n\'est pas invité dans ce dépôt.');
+        } else {
+            $this->addFlash('success', 'Utilisateur <b>'.$collborator->getUsername().'</b> retiré des collaborateurs du dépôt.');
+            $repo->removeCollaborator($collborator);
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($repo);
+            $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('repo_collaborators', ['username' => $user->getUsername(), 'repoName' => $repo->getRepoName()]);
     }
 }

@@ -1,21 +1,21 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Repo : {{ user }}/{{ repo }}{% endblock %}
+{% block title %}Repo : {{ user.username }}/{{ repo.repoName }}{% endblock %}
 
 {% block body %}
     <div class="container">
-        <h2><a href="{{ path('repos_user', {username: user}) }}">{{ user }}</a>/<a href="{{ path('repo_browse', {username: user, repoName: repo}) }}">{{ repo }}</a></h2>
+        <h2><a href="{{ path('repos_user', {username: user.username}) }}">{{ user.username }}</a>/<a href="{{ path('repo_browse', {username: user.username, repoName: repo.repoName}) }}">{{ repo.repoName }}</a></h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 {% if object == 'master' %}
-                    <li class="breadcrumb-item"><a href="{{ path('repo_browse', {username: user, repoName: repo}) }}">{{ repo }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ path('repo_browse', {username: user.username, repoName: repo.repoName}) }}">{{ repo.repoName }}</a></li>
                 {% else %}
-                    <li class="breadcrumb-item"><a href="{{ path('repo_browse_commit', {username: user, repoName: repo, object: object}) }}">{{ repo }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ path('repo_browse_commit', {username: user.username, repoName: repo.repoName, object: object}) }}">{{ repo.repoName }}</a></li>
                 {% endif %}
                 {% set folderpath = '' %}
                 {% for folder in path %}
                     {% set folderpath = folderpath ~ folder %}
-                    <li class="breadcrumb-item"><a href="{{ path('repo_browse_folder', {username: user, repoName: repo, object: object, folder: folderpath}) }}">{{ folder }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ path('repo_browse_folder', {username: user.username, repoName: repo.repoName, object: object, folder: folderpath}) }}">{{ folder }}</a></li>
                     {% set folderpath = folderpath ~ '/' %} {# beautiful urls #}
                 {% endfor %}
                 <li class="breadcrumb-item active" aria-current="page">{{ filename }}</li>
@@ -23,7 +23,7 @@
         </nav>
         <p>{% if object | length == 40%}Commit{% else %}Branche{% endif %} : <code>{{ object }}</code></p>
         <hr>
-        <a href="{{ path('repo_download_file', {username: user, repoName: repo, object: object, file: file}) }}" class="btn btn-info">Télécharger</a><br><br>
+        <a href="{{ path('repo_download_file', {username: user.username, repoName: repo.repoName, object: object, file: file}) }}" class="btn btn-info">Télécharger</a><br><br>
         {% if mimetype == 'text' %}
             <pre><code class="language-{{ extension }}">{{ content }}</code></pre>
         {% elseif mimetype == 'image' %}

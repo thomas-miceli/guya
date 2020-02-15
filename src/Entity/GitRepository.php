@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -36,9 +38,15 @@ class GitRepository {
      */
     private $private = false;
 
-    public function __toString() : string
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\User", inversedBy="gitRepositories")
+     * @ORM\JoinTable(name="user_collaborations")
+     */
+    private $collaborators;
+
+    public function __construct()
     {
-        return $this->repoName;
+        $this->collaborators = new ArrayCollection();
     }
 
     public function getId(): ?int {
@@ -71,6 +79,32 @@ class GitRepository {
 
     public function setPrivate(bool $private): self {
         $this->private = $private;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|User[]
+     */
+    public function getCollaborators(): Collection
+    {
+        return $this->collaborators;
+    }
+
+    public function addCollaborator(User $collaborator): self
+    {
+        if (!$this->collaborators->contains($collaborator)) {
+            $this->collaborators[] = $collaborator;
+        }
+
+        return $this;
+    }
+
+    public function removeCollaborator(User $collaborator): self
+    {
+        if ($this->collaborators->contains($collaborator)) {
+            $this->collaborators->removeElement($collaborator);
+        }
 
         return $this;
     }

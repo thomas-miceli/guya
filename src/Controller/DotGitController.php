@@ -28,12 +28,15 @@ class DotGitController extends AbstractController {
     }
 
     /**
-     * @Route("/{username}/{repoName}.git/info/refs", name="git-refs")
-     * @Route("/{username}/{repoName}.git/git-receive-pack", name="git-receive-pack")
-     * @Route("/{username}/{repoName}.git/git-upload-pack", name="git-upload-pack")
+     * @Route("/{username}/{repoName}.git/info/refs", name="git_refs")
+     * @Route("/{username}/{repoName}.git/git-receive-pack", name="git_receive_pack")
+     * @Route("/{username}/{repoName}.git/git-upload-pack", name="git_upload_pack")
      */
-    public function delete(Request $request, User $user, GitRepository $repo) {
-        $server = new GitServer($this->passwordEncoder, $repo->getUser(), $repo->getPrivate());
+    public function git_http(Request $request, User $user, GitRepository $repo) {
+        $users[] = $repo->getUser();
+        $users = array_merge($users, $repo->getCollaborators()->toArray());
+
+        $server = new GitServer($this->passwordEncoder, $users, $repo->getPrivate());
         $pathInfo = strstr($_SERVER["REQUEST_URI"], "?", true);
         $pathInfo || $pathInfo = $_SERVER["REQUEST_URI"];
 

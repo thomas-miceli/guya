@@ -8,12 +8,12 @@
 
         {{ form_start(form) }}
         <div class="row">
-            <div class="col-md-10">
+            <div class="col-md-8">
                 {{ form_row(form.repoName) }}
-            </div><!--
+            </div>
             <div class="col-md-2">
-
-            </div>-->
+                {{ form_row(form.private) }}
+            </div>
             <div class="col-md-2">
                 <input class="btn btn-info btn-block" type="submit" value="Créer" />
             </div>

@@ -20,17 +20,17 @@ class GitServer
 
     private $passwordEncoder;
 
-    private $users;
+    private $users = [];
 
     private $private;
 
     /**
      * GitServer constructor.
      * @param UserPasswordEncoderInterface $passwordEncoder Symfony password encoder
-     * @param User $users Users (only the owner atm) who has access to the repo
+     * @param array $users Users who has access to the repo
      * @param bool $private If everybody can clone the repo
      */
-    public function __construct(UserPasswordEncoderInterface $passwordEncoder, $users, $private)
+    public function __construct(UserPasswordEncoderInterface $passwordEncoder, array $users, bool $private)
     {
         $this->root = realpath(GitHelper::GIT_FOLDERS);
         $this->passwordEncoder = $passwordEncoder;
@@ -98,8 +98,8 @@ class GitServer
             if (!(
                 $user &&
                 $password &&
-                $this->users->getUsername() == $user &&
-                $this->users->getPassword() == $this->passwordEncoder->isPasswordValid($this->users, $password)
+                $this->checkUsername($user) &&
+                $this->checkPassword($password)
             )
             ) {
                 $response->setStatusCode(Response::HTTP_UNAUTHORIZED);
@@ -123,5 +123,23 @@ class GitServer
         }
 
         $response->setContent($this->body);
+    }
+
+    private function checkUsername(string $username) : bool {
+        foreach ($this->users as $user) {
+            if ($user->getUsername() == $username) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function checkPassword(string $password) : bool {
+        foreach ($this->users as $user) {
+            if ($this->passwordEncoder->isPasswordValid($user, $password)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

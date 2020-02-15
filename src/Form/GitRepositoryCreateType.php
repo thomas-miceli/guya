@@ -8,7 +8,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class GitRepositoryType extends AbstractType {
+class GitRepositoryCreateType extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $builder
             ->add('repoName', TextType::class, [
@@ -17,7 +17,9 @@ class GitRepositoryType extends AbstractType {
                     'placeholder' => 'Nom',
                     'class' => 'form-control'
                 ]
-            ]);
+            ])
+            ->add('private')
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver) {

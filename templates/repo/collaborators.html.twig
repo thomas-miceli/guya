@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Repo : {{ user.username }}/{{ repo.repoName }}{% endblock %}
+
+{% block body %}
+    <div class="container">
+        {% if collaborators is not empty %}
+            <h5>Liste des collaborateurs</h5>
+            {% for collaborator in collaborators %}
+                <form action="{{ path('repo_collaborators_remove', {username: user.username, repoName: repo.repoName, collaborator: collaborator.username}) }}" method="post" class="form-inline" id="remove-collab-form">
+                    <span><b>{{ collaborator.username }}</b></span>
+                    <input type="hidden" name="token" value="{{ csrf_token('remove_collab') }}" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa fa-trash" aria-hidden="true"></i>
+                        Retirer
+                    </button>
+                </form>
+            {% endfor %}
+
+            <hr>
+        {% endif %}
+        <h5>Ajouter un utilisateur</h5>
+        {{ form_start(form, { 'attr' : { 'class': 'form-inline' } }) }}
+        {{ form_widget(form) }}
+        <button type="submit" class="btn btn-info">
+            <i class="fa fa-user-plus" aria-hidden="true"></i>
+            Ajouter
+        </button>
+        {{ form_end(form) }}
+    </div>
+
+{% endblock %}

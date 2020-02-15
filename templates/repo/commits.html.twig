@@ -1,12 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Commits : {{ user }}/{{ repo }}{% endblock %}
+{% block title %}Commits : {{ user.username }}/{{ repo.repoName }}{% endblock %}
 
 {% block body %}
     <div class="container">
-        <h2><a href="{{ path('repos_user', {username: user}) }}">{{ user }}</a>/<a href="{{ path('repo_browse', {username: user, repoName: repo}) }}">{{ repo }}</a></h2>
-        <code>git clone {{ url('repo_browse', {username: user, repoName: repo}) }}.git</code><br>
-        <code>git remote add origin {{ url('repo_browse', {username: user, repoName: repo}) }}.git</code>
+        <h2><a href="{{ path('repos_user', {username: user.username}) }}">{{ user.username }}</a>/<a href="{{ path('repo_browse', {username: user.username, repoName: repo.repoName}) }}">{{ repo.repoName }}</a></h2>
+        <code>git clone {{ url('repo_browse', {username: user.username, repoName: repo.repoName}) }}.git</code><br>
+        <code>git remote add origin {{ url('repo_browse', {username: user.username, repoName: repo.repoName}) }}.git</code>
         <hr>
 
         {% if log == null%}
@@ -16,7 +16,7 @@
                 <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Branches</button>
                 <div class="dropdown-menu" style="max-height: 160px; overflow: auto;">
                     {% for branch in branches %}
-                        <a class="dropdown-item {% if branch == object %}bg-info text-white{% endif %}" type="button" href="{{ path('repo_browse_commits_object', {username: user, repoName: repo, object: branch}) }}">{{branch}}</a>
+                        <a class="dropdown-item {% if branch == object %}bg-info text-white{% endif %}" type="button" href="{{ path('repo_browse_commits_object', {username: user.username, repoName: repo.repoName, object: branch}) }}">{{branch}}</a>
                     {% endfor %}
                 </div>
             </div><br><br>
@@ -25,7 +25,7 @@
             <ul>
                 {% for commit in log %}
                     <li>
-                        <a href="{{ path('repo_browse_commit', {username: user, repoName: repo, object: commit.hash }) }}">{{ commit.hash }}</a>
+                        <a href="{{ path('repo_browse_commit', {username: user.username, repoName: repo.repoName, object: commit.hash }) }}">{{ commit.hash }}</a>
                         <p>{{ commit.author }}</p>
                         <p>{{ commit.date }}</p>
                         <code>{{ commit.message | nl2br }}</code>
