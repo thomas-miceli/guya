@@ -2,11 +2,11 @@
 
 namespace App\Util;
 
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
-class GitHelper {
+class GitHelper
+{
 
     public const GIT_FOLDERS = '../repos/';
     public const GIT_FOLDERS_CMD = './repos/';
@@ -14,25 +14,30 @@ class GitHelper {
     private $userFolder;
     private $pathFolder;
 
-    public function __construct(string $user, string $folderName) {
+    public function __construct(string $user, string $folderName)
+    {
         $this->userFolder = self::GIT_FOLDERS . $user . '/';
         $this->pathFolder = self::GIT_FOLDERS . $user . '/' . $folderName . '.git';
     }
 
-    public function init() {
+    public function init()
+    {
         $this->sfProcess('mkdir ' . $this->pathFolder, self::GIT_FOLDERS);
         $this->sfProcess('git init --bare --template=../../__bare/');
     }
 
-    public function rename(string $name) {
+    public function rename(string $name)
+    {
         $this->sfProcess('mv ' . $this->pathFolder . ' ' . $this->userFolder . $name . '.git', self::GIT_FOLDERS);
     }
 
-    public function delete() {
+    public function delete()
+    {
         $this->sfProcess('rm -rf ' . $this->pathFolder, self::GIT_FOLDERS);
     }
 
-    private function sfProcess(string $cmd, string $wd = '') {
+    private function sfProcess(string $cmd, string $wd = '')
+    {
         $process = new Process(explode(' ', $cmd));
         if (empty($wd)) {
             $process->setWorkingDirectory($this->pathFolder);
@@ -48,7 +53,8 @@ class GitHelper {
         return rtrim($process->getOutput());
     }
 
-    public function getLog($object = 'master') {
+    public function getLog($object = 'master')
+    {
         if ($this->getNbCommits() == 0) {
             return null;
         }
@@ -84,17 +90,20 @@ class GitHelper {
         return $history;
     }
 
-    public function getNbCommits($object = 'master') {
+    public function getNbCommits($object = 'master')
+    {
         if ($this->sfProcess('git rev-list --count --all') == 0) return 0; // If le projet est complètement vide
 
         return $this->sfProcess('git rev-list --count ' . $object);
     }
 
-    public function getFile($file, $object = 'master') {
+    public function getFile($file, $object = 'master')
+    {
         return $this->sfProcess('git show ' . $object . ':' . $file);
     }
 
-    public function getFilesOrFolder($object = 'master', $fileOrFolder = '') {
+    public function getFilesOrFolder($object = 'master', $fileOrFolder = '')
+    {
         $files = $this->sfProcess('git ls-tree --full-name ' . $object . ':' . $fileOrFolder);
         $files = explode("\n", $files);
 
@@ -109,7 +118,8 @@ class GitHelper {
         return $files;
     }
 
-    public function getBranches() {
+    public function getBranches()
+    {
         $branches = $this->sfProcess('git branch --format=\'%(refname:short)\'');
 
         return explode("\n", str_replace('\'', '', $branches));

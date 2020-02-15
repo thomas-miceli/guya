@@ -5,7 +5,6 @@ namespace App\Command;
 
 namespace App\Command;
 
-use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Util\GitHelper;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,10 +16,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 
-class DeleteUserCommand extends Command {
+class DeleteUserCommand extends Command
+{
 
     // to make your command lazily loaded, configure the $defaultName static property,
     // so it will be instantiated only when the command is actually called.
@@ -32,7 +31,8 @@ class DeleteUserCommand extends Command {
     private $entityManager;
     private $users;
 
-    public function __construct(EntityManagerInterface $em, UserRepository $users) {
+    public function __construct(EntityManagerInterface $em, UserRepository $users)
+    {
         parent::__construct();
         $this->entityManager = $em;
         $this->users = $users;
@@ -41,7 +41,8 @@ class DeleteUserCommand extends Command {
     /**
      * {@inheritdoc}
      */
-    protected function configure(): void {
+    protected function configure(): void
+    {
         $this
             ->setDescription('Deletes an existing user')
             ->setHelp($this->getCommandHelp())
@@ -55,7 +56,8 @@ class DeleteUserCommand extends Command {
      * it's too long, it's better to define a separate method to maintain the
      * code readability.
      */
-    private function getCommandHelp(): string {
+    private function getCommandHelp(): string
+    {
         return <<<'HELP'
 The <info>%command.name%</info> command deletes existing users:
   <info>php %command.full_name%</info> <comment>username</comment>
@@ -63,11 +65,13 @@ The <info>%command.name%</info> command deletes existing users:
 HELP;
     }
 
-    protected function initialize(InputInterface $input, OutputInterface $output): void {
+    protected function initialize(InputInterface $input, OutputInterface $output): void
+    {
         $this->io = new SymfonyStyle($input, $output);
     }
 
-    protected function interact(InputInterface $input, OutputInterface $output) {
+    protected function interact(InputInterface $input, OutputInterface $output)
+    {
         if (null !== $input->getArgument('username')) {
             return;
         }
@@ -94,7 +98,8 @@ HELP;
      * This method is executed after interact() and initialize(). It usually
      * contains the logic to execute to complete this command task.
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void {
+    protected function execute(InputInterface $input, OutputInterface $output): void
+    {
         $stopwatch = new Stopwatch();
         $stopwatch->start('rm-user-command');
         $username = $input->getArgument('username');
@@ -120,7 +125,8 @@ HELP;
         }
     }
 
-    private function validateUserData($username): void {
+    private function validateUserData($username): void
+    {
         $existingUser = $this->users->findOneBy(['username' => $username]);
         if (null === $existingUser) {
             throw new RuntimeException(sprintf('There is no user registered with the "%s" username.', $username));

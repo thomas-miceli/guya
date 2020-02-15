@@ -4,8 +4,8 @@
 
 {% block body %}
     <div class="container">
-        <h2><a href="{{ path('repos_user', {username: user.username}) }}">{{ user.username }}</a>/<a href="{{ path('repo_browse', {username: user.username, repoName: repo.repoName}) }}">{{ repo.repoName }}</a></h2>
-        <hr>
+        {{ include('repo/__header.html.twig') }}
+
         <h5>Renommer ce dépôt</h5>
         {{ form_start(form) }}
         {{ form_widget(form) }}
@@ -16,8 +16,9 @@
         {{ form_end(form) }}
         <hr>
         <h5>Supprimer ce dépôt</h5>
-        <form action="{{ path('repo_delete', {username: user.username, repoName: repo.repoName}) }}" method="post" id="delete-form">
-            <input type="hidden" name="token" value="{{ csrf_token('delete') }}" />
+        <form action="{{ path('repo_delete', {username: user.username, repoName: repo.repoName}) }}" method="post"
+              id="delete-form">
+            <input type="hidden" name="token" value="{{ csrf_token('delete') }}"/>
             <button type="submit" class="btn btn-danger">
                 <i class="fa fa-trash" aria-hidden="true"></i>
                 Supprimer

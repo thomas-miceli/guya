@@ -16,4 +16,7 @@ $ php bin/console guya:au
 $ php bin/console guya:ru
 ```
 
-* Change nginx config on your needs
+* Start the server
+```
+$ php -S localhost:8000 -t public
+```

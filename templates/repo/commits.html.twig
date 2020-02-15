@@ -4,23 +4,23 @@
 
 {% block body %}
     <div class="container">
-        <h2><a href="{{ path('repos_user', {username: user.username}) }}">{{ user.username }}</a>/<a href="{{ path('repo_browse', {username: user.username, repoName: repo.repoName}) }}">{{ repo.repoName }}</a></h2>
-        <code>git clone {{ url('repo_browse', {username: user.username, repoName: repo.repoName}) }}.git</code><br>
-        <code>git remote add origin {{ url('repo_browse', {username: user.username, repoName: repo.repoName}) }}.git</code>
-        <hr>
+        {{ include('repo/__header.html.twig') }}
 
-        {% if log == null%}
+        {% if log == null %}
             <p>Aucun commit</p>
         {% else %}
             <div class="btn-group">
-                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Branches</button>
+                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">Branches
+                </button>
                 <div class="dropdown-menu" style="max-height: 160px; overflow: auto;">
                     {% for branch in branches %}
-                        <a class="dropdown-item {% if branch == object %}bg-info text-white{% endif %}" type="button" href="{{ path('repo_browse_commits_object', {username: user.username, repoName: repo.repoName, object: branch}) }}">{{branch}}</a>
+                        <a class="dropdown-item {% if branch == object %}bg-info text-white{% endif %}" type="button"
+                           href="{{ path('repo_browse_commits_object', {username: user.username, repoName: repo.repoName, object: branch}) }}">{{ branch }}</a>
                     {% endfor %}
                 </div>
             </div><br><br>
-            <p>{% if object | length == 40%}Commit{% else %}Branche{% endif %} : <code>{{ object }}</code></p>
+            <p>{% if object | length == 40 %}Commit{% else %}Branche{% endif %} : <code>{{ object }}</code></p>
             <hr>
             <ul>
                 {% for commit in log %}

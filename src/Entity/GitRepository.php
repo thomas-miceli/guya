@@ -12,7 +12,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity(repositoryClass="App\Repository\GitRepositoryRepository")
  * @UniqueEntity(fields={"repoName"}, message="Ce repo existe déjà")
  */
-class GitRepository {
+class GitRepository
+{
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -49,35 +50,42 @@ class GitRepository {
         $this->collaborators = new ArrayCollection();
     }
 
-    public function getId(): ?int {
+    public function getId(): ?int
+    {
         return $this->id;
     }
 
-    public function getRepoName(): ?string {
+    public function getRepoName(): ?string
+    {
         return $this->repoName;
     }
 
-    public function setRepoName(string $name): self {
+    public function setRepoName(string $name): self
+    {
         $this->repoName = $name;
 
         return $this;
     }
 
-    public function getUser(): ?User {
+    public function getUser(): ?User
+    {
         return $this->user;
     }
 
-    public function setUser(?User $user): self {
+    public function setUser(?User $user): self
+    {
         $this->user = $user;
 
         return $this;
     }
 
-    public function getPrivate(): ?bool {
+    public function isPrivate(): ?bool
+    {
         return $this->private;
     }
 
-    public function setPrivate(bool $private): self {
+    public function setPrivate(bool $private): self
+    {
         $this->private = $private;
 
         return $this;

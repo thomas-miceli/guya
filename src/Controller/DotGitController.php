@@ -6,14 +6,15 @@ use App\Entity\GitRepository;
 use App\Entity\User;
 use App\Repository\GitRepositoryRepository;
 use App\Repository\UserRepository;
-use GitServer;
+use App\Util\GitServer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
-class DotGitController extends AbstractController {
+class DotGitController extends AbstractController
+{
 
     private $gitRepositoryRepository;
 
@@ -21,7 +22,8 @@ class DotGitController extends AbstractController {
 
     private $passwordEncoder;
 
-    public function __construct(GitRepositoryRepository $gitRepositoryRepository, UserRepository $userRepository, UserPasswordEncoderInterface $passwordEncoder) {
+    public function __construct(GitRepositoryRepository $gitRepositoryRepository, UserRepository $userRepository, UserPasswordEncoderInterface $passwordEncoder)
+    {
         $this->gitRepositoryRepository = $gitRepositoryRepository;
         $this->userRepository = $userRepository;
         $this->passwordEncoder = $passwordEncoder;
@@ -32,11 +34,12 @@ class DotGitController extends AbstractController {
      * @Route("/{username}/{repoName}.git/git-receive-pack", name="git_receive_pack")
      * @Route("/{username}/{repoName}.git/git-upload-pack", name="git_upload_pack")
      */
-    public function git_http(Request $request, User $user, GitRepository $repo) {
+    public function git_http(Request $request, User $user, GitRepository $repo)
+    {
         $users[] = $repo->getUser();
         $users = array_merge($users, $repo->getCollaborators()->toArray());
 
-        $server = new GitServer($this->passwordEncoder, $users, $repo->getPrivate());
+        $server = new GitServer($this->passwordEncoder, $users, $repo->isPrivate());
         $pathInfo = strstr($_SERVER["REQUEST_URI"], "?", true);
         $pathInfo || $pathInfo = $_SERVER["REQUEST_URI"];
 

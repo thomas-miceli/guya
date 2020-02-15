@@ -13,8 +13,7 @@ class GitRepositoryOptionsType extends AbstractType
     {
         $builder
             ->add('repoName')
-            ->add('private')
-        ;
+            ->add('private');
     }
 
     public function configureOptions(OptionsResolver $resolver)

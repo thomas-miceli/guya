@@ -4,12 +4,15 @@
 
 {% block body %}
     <div class="container">
+        {{ include('repo/__header.html.twig') }}
+
         {% if collaborators is not empty %}
             <h5>Liste des collaborateurs</h5>
             {% for collaborator in collaborators %}
-                <form action="{{ path('repo_collaborators_remove', {username: user.username, repoName: repo.repoName, collaborator: collaborator.username}) }}" method="post" class="form-inline" id="remove-collab-form">
+                <form action="{{ path('repo_collaborators_remove', {username: user.username, repoName: repo.repoName, collaborator: collaborator.username}) }}"
+                      method="post" class="form-inline" id="remove-collab-form">
                     <span><b>{{ collaborator.username }}</b></span>
-                    <input type="hidden" name="token" value="{{ csrf_token('remove_collab') }}" />
+                    <input type="hidden" name="token" value="{{ csrf_token('remove_collab') }}"/>
                     <button type="submit" class="btn btn-danger">
                         <i class="fa fa-trash" aria-hidden="true"></i>
                         Retirer

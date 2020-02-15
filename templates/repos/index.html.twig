@@ -7,7 +7,19 @@
         <h2>Tous les repos</h2>
         <ul>
             {% for repo in repos %}
-                <li><a href="{{ path('repos_user', {username: repo.user.username}) }}">{{ repo.user.username }}</a>/<a href="{{ path('repo_browse', {username: repo.user.username, repoName: repo.repoName}) }}">{{ repo.repoName }}</a></li>
+                <li>
+                    <a href="{{ path('repos_user', {username: repo.user.username}) }}">{{ repo.user.username }}</a>
+                    /
+                    <a href="{{ path('repo_browse', {username: repo.user.username, repoName: repo.repoName}) }}">{{ repo.repoName }}</a>
+                    {% if repo.private %}
+                        <span class="badge badge-danger">Privé</span>
+                    {% else %}
+                        <span class="badge badge-success">Public</span>
+                    {% endif %}
+                    {% if app.user and (repo.collaborators.contains(app.user) or app.user == repo.user) %}
+                        <span class="badge badge-info">Membre</span>
+                    {% endif %}
+                </li>
             {% endfor %}
         </ul>
     </div>

@@ -1,7 +1,7 @@
 <?php
 
-use App\Entity\User;
-use App\Util\GitHelper;
+namespace App\Util;
+
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
@@ -125,7 +125,8 @@ class GitServer
         $response->setContent($this->body);
     }
 
-    private function checkUsername(string $username) : bool {
+    private function checkUsername(string $username): bool
+    {
         foreach ($this->users as $user) {
             if ($user->getUsername() == $username) {
                 return true;
@@ -134,7 +135,8 @@ class GitServer
         return false;
     }
 
-    private function checkPassword(string $password) : bool {
+    private function checkPassword(string $password): bool
+    {
         foreach ($this->users as $user) {
             if ($this->passwordEncoder->isPasswordValid($user, $password)) {
                 return true;

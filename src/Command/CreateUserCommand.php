@@ -20,7 +20,8 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 
-class CreateUserCommand extends Command {
+class CreateUserCommand extends Command
+{
 
     // to make your command lazily loaded, configure the $defaultName static property,
     // so it will be instantiated only when the command is actually called.
@@ -33,7 +34,8 @@ class CreateUserCommand extends Command {
     private $passwordEncoder;
     private $users;
 
-    public function __construct(EntityManagerInterface $em, UserPasswordEncoderInterface $encoder, UserRepository $users) {
+    public function __construct(EntityManagerInterface $em, UserPasswordEncoderInterface $encoder, UserRepository $users)
+    {
         parent::__construct();
         $this->entityManager = $em;
         $this->passwordEncoder = $encoder;
@@ -43,7 +45,8 @@ class CreateUserCommand extends Command {
     /**
      * {@inheritdoc}
      */
-    protected function configure(): void {
+    protected function configure(): void
+    {
         $this
             ->setDescription('Creates users and stores them in the database')
             ->setHelp($this->getCommandHelp())
@@ -58,7 +61,8 @@ class CreateUserCommand extends Command {
      * it's too long, it's better to define a separate method to maintain the
      * code readability.
      */
-    private function getCommandHelp(): string {
+    private function getCommandHelp(): string
+    {
         return <<<'HELP'
 The <info>%command.name%</info> command creates new users and saves them in the database:
   <info>php %command.full_name%</info> <comment>username password email</comment>
@@ -74,11 +78,13 @@ provide the missing values:
 HELP;
     }
 
-    protected function initialize(InputInterface $input, OutputInterface $output): void {
+    protected function initialize(InputInterface $input, OutputInterface $output): void
+    {
         $this->io = new SymfonyStyle($input, $output);
     }
 
-    protected function interact(InputInterface $input, OutputInterface $output) {
+    protected function interact(InputInterface $input, OutputInterface $output)
+    {
         if (null !== $input->getArgument('username') && null !== $input->getArgument('password')) {
             return;
         }
@@ -113,7 +119,8 @@ HELP;
      * This method is executed after interact() and initialize(). It usually
      * contains the logic to execute to complete this command task.
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void {
+    protected function execute(InputInterface $input, OutputInterface $output): void
+    {
         $stopwatch = new Stopwatch();
         $stopwatch->start('add-user-command');
         $username = $input->getArgument('username');
@@ -144,7 +151,8 @@ HELP;
         }
     }
 
-    private function validateUserData($username): void {
+    private function validateUserData($username): void
+    {
         // first check if a user with the same username already exists.
         $existingUser = $this->users->findOneBy(['username' => $username]);
         if (null !== $existingUser) {
